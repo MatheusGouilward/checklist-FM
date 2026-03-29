@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '@/lib/db/schema';
 import type { Photo } from '@/lib/checklist/types';
 import { Camera, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PhotoCaptureProps {
   checklistId: string;
@@ -83,10 +84,8 @@ export function PhotoCapture({
     onPhotoRemoved(photoId);
   };
 
-  const hasPhotos = photos.length > 0;
-
   return (
-    <div className="flex flex-col items-start">
+    <div className="space-y-2">
       {/* Hidden file input */}
       <input
         ref={inputRef}
@@ -98,38 +97,34 @@ export function PhotoCapture({
         aria-label="Capturar foto"
       />
 
-      {/* Trigger button */}
+      {/* Trigger button — FULL WIDTH */}
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className={
-          hasPhotos
-            ? 'flex h-9 items-center gap-1.5 rounded-lg bg-sky-50 px-3 text-sm font-medium text-sky-700 transition-colors hover:bg-sky-100'
-            : 'flex h-9 items-center gap-1.5 rounded-lg border border-dashed border-muted-foreground/30 px-3 text-sm text-muted-foreground transition-colors hover:border-muted-foreground/50 hover:bg-muted/30'
-        }
+        className={cn(
+          'flex h-11 w-full items-center justify-center gap-2 rounded-lg border text-sm transition-colors',
+          photos.length > 0
+            ? 'border-sky-200 bg-sky-50 font-medium text-sky-700 hover:bg-sky-100'
+            : 'border-dashed border-muted-foreground/25 text-muted-foreground hover:bg-muted/30'
+        )}
       >
         <Camera className="h-4 w-4" />
-        {hasPhotos ? (
-          <>
-            <span>{photos.length}</span>
-            <span className="text-sky-500">·</span>
-            <span className="text-xs text-sky-500">+ Adicionar</span>
-          </>
-        ) : (
-          <span>Foto</span>
-        )}
+        {photos.length === 0
+          ? 'Tirar foto'
+          : `${photos.length} foto${photos.length > 1 ? 's' : ''} \u00b7 Adicionar mais`
+        }
       </button>
 
-      {/* Thumbnails below */}
-      {hasPhotos && (
-        <div className="mt-2 flex gap-1.5 overflow-x-auto">
+      {/* Thumbnails row */}
+      {photos.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {photos.map((photo) => (
             <div key={photo.id} className="group relative shrink-0">
               <PhotoThumbnail photo={photo} />
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); handleRemove(photo.id); }}
-                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white opacity-80 transition-opacity hover:opacity-100"
                 aria-label="Remover foto"
               >
                 <X className="h-3 w-3" />
@@ -149,7 +144,7 @@ function PhotoThumbnail({ photo }: { photo: Photo }) {
     <img
       src={url}
       alt={`Foto capturada às ${photo.timestamp.toLocaleTimeString('pt-BR')}`}
-      className="h-12 w-12 rounded-lg border border-border object-cover"
+      className="h-14 w-14 rounded-lg border border-border object-cover"
       onLoad={() => URL.revokeObjectURL(url)}
     />
   );

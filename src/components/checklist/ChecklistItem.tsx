@@ -139,9 +139,9 @@ export function ChecklistItem({
         )}
       </div>
 
-      {/* Actions row */}
-      <div className="mt-3 flex items-start gap-2">
-        {/* Photo button + thumbnails */}
+      {/* Action buttons — stacked full-width */}
+      <div className="mt-3 space-y-2">
+        {/* Photo button — FULL WIDTH */}
         <PhotoCapture
           checklistId={checklistId}
           itemId={item.id}
@@ -150,20 +150,19 @@ export function ChecklistItem({
           onPhotoRemoved={onPhotoRemoved}
         />
 
-        {/* Observation button */}
+        {/* Note button — secondary, full-width */}
         <button
           type="button"
           onClick={() => setShowObservation(!showObservation)}
           className={cn(
-            'flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm transition-colors self-start',
+            'flex h-9 w-full items-center justify-center gap-1.5 rounded-lg border text-sm transition-colors',
             hasObservation
-              ? 'bg-violet-50 font-medium text-violet-700 hover:bg-violet-100'
-              : 'border border-dashed border-muted-foreground/30 text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/30'
+              ? 'border-violet-200 bg-violet-50 font-medium text-violet-700'
+              : 'border-dashed border-muted-foreground/25 text-muted-foreground hover:bg-muted/30'
           )}
         >
           <MessageSquare className={cn('h-4 w-4', hasObservation && 'fill-current')} />
-          Nota
-          {hasObservation && <Check className="h-3 w-3 text-violet-400" />}
+          {hasObservation ? 'Editar observação' : 'Adicionar observação'}
         </button>
       </div>
 

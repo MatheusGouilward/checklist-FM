@@ -4,6 +4,18 @@ import { useChecklistStore } from '@/stores/checklist-store';
 import { ChecklistSection } from './ChecklistSection';
 import { TOTAL_ITEMS } from '@/lib/checklist/template';
 import { ChevronLeft, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+function getSectionShortName(title: string): string {
+  const map: Record<string, string> = {
+    'Filtros e Qualidade do Ar': 'Filtros',
+    'Componentes Mecânicos': 'Mecânica',
+    'Sistema de Refrigeração': 'Refrigeração',
+    'Componentes Elétricos': 'Elétrica',
+    'Estrutura e Geral': 'Geral',
+  };
+  return map[title] ?? title.split(' ').slice(0, 2).join(' ');
+}
 
 interface ChecklistFormProps {
   onGoToSummary?: () => void;
@@ -79,31 +91,44 @@ export function ChecklistForm({ onGoToSummary, onBack }: ChecklistFormProps) {
           />
         </div>
 
-        {/* Section dots */}
-        <div className="mt-2 flex justify-center gap-2 py-1">
+        {/* Section stepper pills */}
+        <div className="mt-2.5 flex gap-1 overflow-x-auto px-1 pb-1">
           {sections.map((section, index) => {
             const sectionFilled = section.items.filter(
               (item) => item.value !== null && item.value !== ''
             ).length;
-            const sectionComplete = sectionFilled === section.items.length;
+            const sectionTotal = section.items.length;
+            const sectionComplete = sectionFilled === sectionTotal;
             const isActive = index === activeSectionIndex;
-
-            let dotClass = 'bg-muted-foreground/20';
-            if (isActive) dotClass = 'bg-primary scale-125';
-            else if (sectionComplete) dotClass = 'bg-emerald-500';
-            else if (sectionFilled > 0) dotClass = 'bg-amber-400';
+            const hasProgress = sectionFilled > 0 && !sectionComplete;
 
             return (
               <button
                 key={section.id}
                 type="button"
                 onClick={() => setActiveSectionIndex(index)}
-                aria-label={`Seção ${index + 1}: ${section.title}`}
-                className="flex h-6 w-6 items-center justify-center"
+                aria-label={`${section.title}: ${sectionFilled} de ${sectionTotal} itens`}
+                className={cn(
+                  'flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all',
+                  isActive
+                    ? 'bg-primary text-white shadow-sm'
+                    : sectionComplete
+                      ? 'bg-emerald-50 text-emerald-700'
+                      : hasProgress
+                        ? 'bg-amber-50 text-amber-700'
+                        : 'bg-muted text-muted-foreground'
+                )}
               >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full transition-all duration-200 ${dotClass}`}
-                />
+                {sectionComplete ? (
+                  <Check className="h-3 w-3" />
+                ) : (
+                  <span className="text-[10px] tabular-nums">
+                    {sectionFilled}/{sectionTotal}
+                  </span>
+                )}
+                <span className="max-w-[80px] truncate">
+                  {getSectionShortName(section.title)}
+                </span>
               </button>
             );
           })}

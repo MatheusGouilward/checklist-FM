@@ -1,0 +1,4 @@
+// This file is intentionally empty.
+// Auth logic lives in src/proxy.ts (Next.js 16 convention).
+// Do not add middleware here — Next.js 16 will throw an error if both files exist.
+export {};

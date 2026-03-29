@@ -8,6 +8,7 @@ import { ChecklistForm } from '@/components/checklist/ChecklistForm';
 import { ReportSummary } from '@/components/report/ReportSummary';
 import { CompletionScreen } from '@/components/checklist/CompletionScreen';
 import type { ServiceOrderRecord } from '@/lib/db/schema';
+import { db } from '@/lib/db/schema';
 
 type Screen = 'list' | 'checklist' | 'summary' | 'completed';
 
@@ -23,6 +24,7 @@ export default function ServiceOrdersPage() {
   } = useChecklistStore();
 
   const [screen, setScreen] = useState<Screen>('list');
+  const [refreshCounter, setRefreshCounter] = useState(0);
 
   async function handleSelectOrder(order: ServiceOrderRecord) {
     if (order.checklistId) {
@@ -53,12 +55,30 @@ export default function ServiceOrdersPage() {
   }
 
   async function handleComplete() {
+    const checklistId = useChecklistStore.getState().id;
+    const serviceOrderId = useChecklistStore.getState().serviceOrderId;
+
     await completeChecklist();
+
+    // Update the OS locally in Dexie to reflect completion
+    if (serviceOrderId) {
+      try {
+        await db.serviceOrders.update(serviceOrderId, {
+          status: 'completed' as const,
+          checklistId: checklistId ?? undefined,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch {
+        // Silently fail — sync will resolve
+      }
+    }
+
     setScreen('completed');
   }
 
   function handleBackToList() {
     reset();
+    setRefreshCounter((c) => c + 1);
     setScreen('list');
   }
 
@@ -89,7 +109,7 @@ export default function ServiceOrdersPage() {
       <h2 className="mb-5 font-heading text-xl font-bold text-foreground">
         Ordens de Serviço
       </h2>
-      <ServiceOrderList onSelectOrder={handleSelectOrder} />
+      <ServiceOrderList key={refreshCounter} onSelectOrder={handleSelectOrder} />
     </div>
   );
 }

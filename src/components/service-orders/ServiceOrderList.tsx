@@ -29,6 +29,35 @@ function filterOrders(orders: ServiceOrderRecord[], filter: FilterKey): ServiceO
   return orders;
 }
 
+interface DateGroup {
+  label: string;
+  orders: ServiceOrderRecord[];
+}
+
+function groupByDate(orders: ServiceOrderRecord[]): DateGroup[] {
+  const groups = new Map<string, ServiceOrderRecord[]>();
+
+  for (const order of orders) {
+    const date = new Date(order.scheduledDate);
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.round((dateStart.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24));
+
+    let label: string;
+    if (diffDays === 0) label = 'Hoje';
+    else if (diffDays === 1) label = 'Amanhã';
+    else if (diffDays === -1) label = 'Ontem';
+    else if (diffDays < -1) label = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+    else label = date.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label)!.push(order);
+  }
+
+  return Array.from(groups, ([label, groupOrders]) => ({ label, orders: groupOrders }));
+}
+
 async function fetchAndCacheOrders(
   technicianId: string
 ): Promise<ServiceOrderRecord[]> {
@@ -76,6 +105,36 @@ async function loadFromDexie(
     .where('technicianId')
     .equals(technicianId)
     .sortBy('scheduledDate');
+}
+
+function DateGroupedList({ orders, onSelectOrder }: { orders: ServiceOrderRecord[]; onSelectOrder: (o: ServiceOrderRecord) => void }) {
+  const groups = groupByDate(orders);
+
+  return (
+    <div>
+      {groups.map((group) => (
+        <div key={group.label}>
+          <div className="flex items-center gap-3 py-3">
+            <span className={cn(
+              'text-xs font-semibold uppercase tracking-wider',
+              group.label === 'Hoje' ? 'text-primary' : 'text-muted-foreground/60'
+            )}>
+              {group.label}
+            </span>
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs tabular-nums text-muted-foreground/40">
+              {group.orders.length}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {group.orders.map((order) => (
+              <ServiceOrderCard key={order.id} order={order} onStart={onSelectOrder} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function ServiceOrderList({ onSelectOrder }: ServiceOrderListProps) {
@@ -205,37 +264,36 @@ export function ServiceOrderList({ onSelectOrder }: ServiceOrderListProps) {
           </p>
         </div>
       ) : activeFilter === 'all' ? (
-        <div className="space-y-3">
-          {/* Pending/in_progress first */}
+        <div>
+          {/* Pending grouped by date */}
           {pendingCount > 0 && (
-            <>
-              {orders
-                .filter((o) => o.status === 'pending' || o.status === 'in_progress')
-                .map((order) => (
-                  <ServiceOrderCard key={order.id} order={order} onStart={onSelectOrder} />
-                ))}
-            </>
+            <DateGroupedList
+              orders={orders.filter((o) => o.status === 'pending' || o.status === 'in_progress')}
+              onSelectOrder={onSelectOrder}
+            />
           )}
           {/* Completed section */}
           {completedCount > 0 && (
             <>
-              <p className="mt-4 mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
-                Concluídas
-              </p>
-              {orders
-                .filter((o) => o.status === 'completed')
-                .map((order) => (
-                  <ServiceOrderCard key={order.id} order={order} onStart={onSelectOrder} />
-                ))}
+              <div className="flex items-center gap-3 py-3 mt-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
+                  Concluídas
+                </span>
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs tabular-nums text-muted-foreground/40">{completedCount}</span>
+              </div>
+              <div className="space-y-3">
+                {orders
+                  .filter((o) => o.status === 'completed')
+                  .map((order) => (
+                    <ServiceOrderCard key={order.id} order={order} onStart={onSelectOrder} />
+                  ))}
+              </div>
             </>
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((order) => (
-            <ServiceOrderCard key={order.id} order={order} onStart={onSelectOrder} />
-          ))}
-        </div>
+        <DateGroupedList orders={filtered} onSelectOrder={onSelectOrder} />
       )}
     </div>
   );
