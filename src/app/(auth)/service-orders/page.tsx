@@ -60,7 +60,6 @@ export default function ServiceOrdersPage() {
 
     await completeChecklist();
 
-    // Update the OS locally in Dexie to reflect completion
     if (serviceOrderId) {
       try {
         await db.serviceOrders.update(serviceOrderId, {
@@ -83,7 +82,12 @@ export default function ServiceOrdersPage() {
   }
 
   if (screen === 'checklist') {
-    return <ChecklistForm onGoToSummary={handleGoToSummary} onBack={handleBackToList} />;
+    return (
+      <ChecklistForm
+        onGoToSummary={handleGoToSummary}
+        onBack={handleBackToList}
+      />
+    );
   }
 
   if (screen === 'summary') {
@@ -105,11 +109,6 @@ export default function ServiceOrdersPage() {
   }
 
   return (
-    <div className="px-5 py-5">
-      <h2 className="mb-5 font-heading text-xl font-bold text-foreground">
-        Ordens de Serviço
-      </h2>
-      <ServiceOrderList key={refreshCounter} onSelectOrder={handleSelectOrder} />
-    </div>
+    <ServiceOrderList key={refreshCounter} onSelectOrder={handleSelectOrder} />
   );
 }

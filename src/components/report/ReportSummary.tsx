@@ -152,8 +152,8 @@ export function ReportSummary({ onBack, onComplete }: ReportSummaryProps) {
   const allIssues = sections.flatMap((s) => getSectionIssues(s));
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-background">
-      <div className="flex-1 space-y-4 px-5 py-5">
+    <div className="flex h-full flex-col bg-background">
+      <div className="flex-1 overflow-y-auto overscroll-y-contain space-y-4 px-5 py-5">
         {/* Page header */}
         <div>
           <h1 className="font-heading text-xl font-bold text-foreground">Revisão</h1>
@@ -297,7 +297,7 @@ export function ReportSummary({ onBack, onComplete }: ReportSummaryProps) {
       )}
 
       {/* Footer actions */}
-      <div className="sticky bottom-0 z-10 flex gap-3 border-t border-border bg-white px-5 py-3 safe-bottom">
+      <div className="sticky bottom-0 z-10 flex gap-3 border-t border-border bg-white px-5 pt-3 pb-5">
         <button
           type="button"
           onClick={onBack}

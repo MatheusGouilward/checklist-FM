@@ -17,39 +17,23 @@ interface ChecklistItemProps {
   onPhotoRemoved: (photoId: string) => void;
 }
 
-function getItemBorderClass(item: ChecklistItemType): string {
-  if (item.value === null || item.value === '') {
-    return 'border-border';
-  }
+type StatusType = 'ok' | 'warning' | 'critical' | 'neutral';
 
-  const val = String(item.value).toLowerCase();
-  if (val === 'ok' || val === 'substituído' || val === 'limpo' || val === 'recarga realizada') {
-    return 'border-emerald-200';
-  }
-  if (val.includes('necessita') || val === 'baixo' || val === 'descalibrado' || val === 'folga' || val === 'desgaste' || val === 'obstruído' || val === 'ruído anormal' || val === 'dano visível') {
-    return 'border-amber-200';
-  }
-  if (val === 'detectado' || val === 'danificado' || val === 'não funciona' || val === 'vazamento' || val === 'vazamento detectado' || val === 'falha') {
-    return 'border-red-200';
-  }
-  return 'border-primary/20';
+function getStatusType(value: string | number | null): StatusType {
+  if (value === null || value === '') return 'neutral';
+  const val = String(value).toLowerCase();
+  if (['ok', 'substituído', 'limpo', 'recarga realizada'].includes(val)) return 'ok';
+  if (val.includes('necessita') || ['baixo', 'descalibrado', 'folga', 'desgaste', 'obstruído', 'ruído anormal', 'dano visível'].includes(val)) return 'warning';
+  if (['detectado', 'danificado', 'não funciona', 'vazamento', 'vazamento detectado', 'falha'].includes(val)) return 'critical';
+  return 'ok';
 }
 
-function getStatusBgClass(item: ChecklistItemType): string {
-  const val = String(item.value).toLowerCase();
-  if (['ok', 'substituído', 'limpo', 'recarga realizada'].includes(val)) return 'bg-emerald-100';
-  if (val.includes('necessita') || ['baixo', 'descalibrado', 'folga', 'desgaste', 'obstruído', 'ruído anormal', 'dano visível'].includes(val)) return 'bg-amber-100';
-  if (['detectado', 'danificado', 'não funciona', 'vazamento', 'vazamento detectado', 'falha'].includes(val)) return 'bg-red-100';
-  return 'bg-primary/10';
-}
-
-function getStatusIconColor(item: ChecklistItemType): string {
-  const val = String(item.value).toLowerCase();
-  if (['ok', 'substituído', 'limpo', 'recarga realizada'].includes(val)) return 'text-emerald-600';
-  if (val.includes('necessita') || ['baixo', 'descalibrado', 'folga', 'desgaste', 'obstruído', 'ruído anormal', 'dano visível'].includes(val)) return 'text-amber-600';
-  if (['detectado', 'danificado', 'não funciona', 'vazamento', 'vazamento detectado', 'falha'].includes(val)) return 'text-red-600';
-  return 'text-primary';
-}
+const STATUS_COLORS = {
+  ok: { border: 'border-emerald-200', bg: 'bg-emerald-100', icon: 'text-emerald-600' },
+  warning: { border: 'border-amber-200', bg: 'bg-amber-100', icon: 'text-amber-600' },
+  critical: { border: 'border-red-200', bg: 'bg-red-100', icon: 'text-red-600' },
+  neutral: { border: 'border-border', bg: '', icon: '' },
+};
 
 export function ChecklistItem({
   checklistId,
@@ -64,12 +48,14 @@ export function ChecklistItem({
   );
   const isFilled = item.value !== null && item.value !== '';
   const hasObservation = !!item.observation && item.observation.length > 0;
+  const statusType = getStatusType(item.value);
+  const colors = STATUS_COLORS[statusType];
 
   return (
     <div
       className={cn(
         'rounded-xl border bg-white p-4 transition-colors duration-150',
-        getItemBorderClass(item)
+        isFilled ? colors.border : 'border-[#e4e4e4]'
       )}
     >
       {/* Header: indicator + label + PMOC */}
@@ -78,21 +64,21 @@ export function ChecklistItem({
         <div className={cn(
           'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full transition-all duration-200',
           isFilled
-            ? getStatusBgClass(item)
+            ? colors.bg
             : 'border-2 border-muted-foreground/20'
         )}>
           {isFilled && (
-            <Check className={cn('h-3 w-3', getStatusIconColor(item))} />
+            <Check className={cn('h-3 w-3', colors.icon)} />
           )}
         </div>
 
         {/* Label + PMOC */}
-        <div className="flex items-start gap-1 min-w-0 flex-1">
+        <div className="flex min-w-0 flex-1 items-start gap-1">
           <span className="text-sm font-medium text-foreground">
             {item.label}
           </span>
           {item.required && (
-            <span className="ml-1.5 shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-primary">
+            <span className="ml-1 shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider text-primary">
               PMOC
             </span>
           )}
@@ -139,30 +125,32 @@ export function ChecklistItem({
         )}
       </div>
 
-      {/* Action buttons — stacked full-width */}
-      <div className="mt-3 space-y-2">
-        {/* Photo button — FULL WIDTH */}
-        <PhotoCapture
-          checklistId={checklistId}
-          itemId={item.id}
-          photos={item.photos}
-          onPhotoAdded={onPhotoAdded}
-          onPhotoRemoved={onPhotoRemoved}
-        />
+      {/* Action row: photo + note side by side */}
+      <div className="mt-3 flex gap-2">
+        {/* Photo */}
+        <div className="flex-1">
+          <PhotoCapture
+            checklistId={checklistId}
+            itemId={item.id}
+            photos={item.photos}
+            onPhotoAdded={onPhotoAdded}
+            onPhotoRemoved={onPhotoRemoved}
+          />
+        </div>
 
-        {/* Note button — secondary, full-width */}
+        {/* Note toggle */}
         <button
           type="button"
           onClick={() => setShowObservation(!showObservation)}
           className={cn(
-            'flex h-9 w-full items-center justify-center gap-1.5 rounded-lg border text-sm transition-colors',
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors',
             hasObservation
-              ? 'border-violet-200 bg-violet-50 font-medium text-violet-700'
+              ? 'border-violet-200 bg-violet-50 text-violet-700'
               : 'border-dashed border-muted-foreground/25 text-muted-foreground hover:bg-muted/30'
           )}
+          aria-label={hasObservation ? 'Editar observação' : 'Adicionar observação'}
         >
           <MessageSquare className={cn('h-4 w-4', hasObservation && 'fill-current')} />
-          {hasObservation ? 'Editar observação' : 'Adicionar observação'}
         </button>
       </div>
 
@@ -177,5 +165,4 @@ export function ChecklistItem({
         </div>
       )}
     </div>
-  );
-}
+  );}

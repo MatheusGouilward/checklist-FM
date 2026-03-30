@@ -41,9 +41,9 @@ export default function AuthLayout({
   }
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
+    <div className="flex h-[100dvh] flex-col overflow-hidden">
       {/* Header — clean, flat, functional */}
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-white px-5 pt-[env(safe-area-inset-top)]">
+      <header className="shrink-0 z-40 flex h-14 items-center justify-between border-b border-border bg-white px-5 pt-[env(safe-area-inset-top)]">
         {/* Left: brand + user */}
         <div className="flex items-center">
           <span className="font-heading text-lg font-bold text-primary">
@@ -68,8 +68,8 @@ export default function AuthLayout({
         </div>
       </header>
 
-      {/* Content */}
-      <main className="min-h-screen flex-1 bg-background pt-4 pb-20">
+      {/* Content — flex-1 preenche exatamente o espaço restante após o header */}
+      <main className="flex-1 overflow-hidden bg-background">
         {children}
       </main>
     </div>

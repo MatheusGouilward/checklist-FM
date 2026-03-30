@@ -111,7 +111,7 @@ export function PhotoCapture({
         <Camera className="h-4 w-4" />
         {photos.length === 0
           ? 'Tirar foto'
-          : `${photos.length} foto${photos.length > 1 ? 's' : ''} \u00b7 Adicionar mais`
+          : `${photos.length} foto${photos.length > 1 ? 's' : ''} · Adicionar mais`
         }
       </button>
 

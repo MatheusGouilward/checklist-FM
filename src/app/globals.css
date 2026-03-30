@@ -182,10 +182,9 @@
 .stagger-children > *:nth-child(4) { animation-delay: 0.12s; }
 .stagger-children > *:nth-child(5) { animation-delay: 0.15s; }
 
-/* === Better scrollbar === */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: oklch(0.8 0 0); border-radius: 100px; }
+/* === Hide scrollbars globally (mobile PWA) === */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
 
 /* === Focus-visible global reset for consistency === */
 *:focus-visible {

@@ -12,6 +12,19 @@ export const DEMO_USER: AuthUser = {
 };
 
 /**
+ * Store logo mapping — maps store names to their logo paths in /public/logos/.
+ * Used by ServiceOrderCard to show real brand logos instead of initials.
+ * In production, this would come from the service_orders or stores table.
+ */
+export const STORE_LOGOS: Record<string, string> = {
+  'Loja Renner': '/logos/renner.png',
+  'Starbucks': '/logos/starbucks.png',
+  'Lojas Americanas': '/logos/americanas.png',
+  'Natura': '/logos/natura.png',
+  'C&A': '/logos/cea.png',
+};
+
+/**
  * Mock service orders — pre-filled by the "gestor", ready for the technician.
  * These mirror the seed.sql data for consistency.
  */
@@ -74,18 +87,35 @@ export const DEMO_SERVICE_ORDERS: ServiceOrderRecord[] = [
     companyId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     technicianId: '11111111-1111-1111-1111-111111111111',
     status: 'completed',
-    scheduledDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+    scheduledDate: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0],
     storeName: 'Natura',
-    storeContact: 'loja.natura@shopping.com',
+    storeContact: 'loja.natura@shopping.com.br',
     shoppingName: 'Shopping Center Norte',
-    equipmentModel: 'Split Carrier XPower',
-    equipmentCapacity: '24.000 BTU',
-    equipmentLocation: 'Forro da área de atendimento',
+    equipmentModel: 'Split Piso-Teto Carrier 40MBC',
+    equipmentCapacity: '48.000 BTU',
     serviceCategory: 'hvac',
     serviceType: 'preventive',
-    notes: 'Revisão trimestral concluída.',
     checklistId: 'cccccccc-cccc-cccc-cccc-cccccccccc01',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 86400000).toISOString(),
+    notes: 'Manutenção preventiva semestral concluída.',
+    createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+  },
+  {
+    id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb05',
+    companyId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    technicianId: '11111111-1111-1111-1111-111111111111',
+    status: 'pending',
+    scheduledDate: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0],
+    storeName: 'C&A',
+    storeContact: 'manutencao@cea.com.br',
+    shoppingName: 'Shopping Iguatemi',
+    equipmentModel: 'VRF Midea V8 Series',
+    equipmentCapacity: '80.000 BTU',
+    equipmentLocation: 'Rooftop, acesso pela escada de emergência',
+    serviceCategory: 'hvac',
+    serviceType: 'corrective',
+    notes: 'URGENTE: Sistema desligou sozinho 2x na última semana. Verificar placa eletrônica.',
+    createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 4 * 86400000).toISOString(),
   },
 ];
